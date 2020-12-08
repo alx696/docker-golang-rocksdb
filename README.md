@@ -1,6 +1,6 @@
 ## 构建使用RocksDB的Golang应用
 
-自行构建RocksDB以关闭SSE4.2支持老CPU。
+自行构建apline apk形式的RocksDB，关闭SSE4.2支持老CPU。比起直接[通过源码编译使用共享库](源码共享库-Dockerfile)的方式，apk的体积是共享库的百分之一。
 
 ## 说明
 
