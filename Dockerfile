@@ -20,8 +20,8 @@ RUN set -eux && \
 RUN set -eux && \
   APK_DIR="packages/home/$(uname -m)" && \
   ls -l ${APK_DIR} && \
-  cp "${APK_DIR}/rocksdb-dev-6.13.3-r0.apk" ./rocksdb-dev.apk && \
-  cp "${APK_DIR}/rocksdb-6.13.3-r0.apk" ./rocksdb.apk
+  cp "${APK_DIR}/rocksdb-dev-6.14.6-r0.apk" ./rocksdb-dev.apk && \
+  cp "${APK_DIR}/rocksdb-6.14.6-r0.apk" ./rocksdb.apk
 
 ################
 
