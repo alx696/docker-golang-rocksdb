@@ -1,28 +1,7 @@
 #
-# 编译RocksDB阶段（关闭sse4_2以支持老CPU）
+# RocksDB安装包
 #
-FROM alpinelinux/package-builder AS rocksdb
-WORKDIR /home/buildozer
-
-RUN set -eux && \
-  #设置源
-  echo "http://mirrors.ustc.edu.cn/alpine/edge/main/" > /etc/apk/repositories && \
-  echo "http://mirrors.ustc.edu.cn/alpine/edge/community/" >> /etc/apk/repositories && \
-  echo "http://mirrors.ustc.edu.cn/alpine/edge/testing/" >> /etc/apk/repositories
-
-#构建脚本来自https://git.alpinelinux.org/aports/tree/testing/rocksdb?h=master
-COPY rocksdb/* ./
-RUN set -eux && \
-  abuild-keygen -a -n && \
-  abuild deps && \
-  abuild -r
-
-RUN set -eux && \
-  APK_DIR="packages/home/$(uname -m)" && \
-  ls -l ${APK_DIR} && \
-  cp "${APK_DIR}/rocksdb-dev-6.14.6-r0.apk" ./rocksdb-dev.apk && \
-  cp "${APK_DIR}/rocksdb-6.14.6-r0.apk" ./rocksdb.apk
-
+FROM registry.cn-shanghai.aliyuncs.com/xm69/alpine-rocksdb-apk AS rocksdb
 ################
 
 #
@@ -39,9 +18,10 @@ RUN set -eux && \
 
 #从编译RocksDB阶段中复制apk并安装
 #(不考虑支持老CPU时直接安装rocksdb-dev包即可)
-COPY --from=rocksdb /home/buildozer/rocksdb-dev.apk .
+COPY --from=rocksdb /rocksdb-dev.apk .
 RUN set -eux && \
-  apk add --allow-untrusted rocksdb-dev.apk
+  apk add --allow-untrusted rocksdb-dev.apk && \
+  rm rocksdb-dev.apk
 
 #编译Golang应用
 COPY code .
@@ -78,9 +58,10 @@ RUN set -eux && \
 
 #从编译RocksDB阶段中复制apk并安装
 #(不考虑支持老CPU时直接安装rocksdb包即可)
-COPY --from=rocksdb /home/buildozer/rocksdb.apk .
+COPY --from=rocksdb /rocksdb.apk .
 RUN set -eux && \
-  apk add --allow-untrusted rocksdb.apk
+  apk add --allow-untrusted rocksdb.apk && \
+  rm rocksdb.apk
 
 #从编译应用阶段中复制程序
 COPY --from=app /home/main .
