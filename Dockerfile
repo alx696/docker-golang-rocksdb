@@ -1,32 +1,18 @@
 #
-# RocksDB安装包
-#
-FROM registry.cn-shanghai.aliyuncs.com/xm69/alpine-rocksdb-apk AS rocksdb
-################
-
-#
 # 编译应用阶段
 #
-FROM alpine:3 AS app
+FROM registry.cn-shanghai.aliyuncs.com/xm69/alpine-rocksdb-apk AS app
 WORKDIR /home
+COPY code .
+ENV GOPROXY=https://goproxy.cn
 RUN set -eux && \
   #设置源
   echo "http://mirrors.ustc.edu.cn/alpine/edge/main/" > /etc/apk/repositories && \
   echo "http://mirrors.ustc.edu.cn/alpine/edge/community/" >> /etc/apk/repositories && \
   echo "http://mirrors.ustc.edu.cn/alpine/edge/testing/" >> /etc/apk/repositories && \
-  apk update
-
-#从编译RocksDB阶段中复制apk并安装
-#(不考虑支持老CPU时直接安装rocksdb-dev包即可)
-COPY --from=rocksdb /rocksdb-dev.apk .
-RUN set -eux && \
-  apk add --allow-untrusted rocksdb-dev.apk && \
-  rm rocksdb-dev.apk
-
-#编译Golang应用
-COPY code .
-ENV GOPROXY=https://goproxy.cn
-RUN set -eux && \
+  apk update && \
+  #安装RocksDB
+  apk add --allow-untrusted /rocksdb.apk /rocksdb-dev.apk && \
   #打印编译环境
   echo "编译环境：$(uname -a)" && \
   #安装Golang环境
@@ -35,7 +21,6 @@ RUN set -eux && \
   go mod download && go mod verify && \
   #编译Golang应用
   go build -o /home/main
-
 ################
 
 #
@@ -58,7 +43,7 @@ RUN set -eux && \
 
 #从编译RocksDB阶段中复制apk并安装
 #(不考虑支持老CPU时直接安装rocksdb包即可)
-COPY --from=rocksdb /rocksdb.apk .
+COPY --from=app /rocksdb.apk .
 RUN set -eux && \
   apk add --allow-untrusted rocksdb.apk && \
   rm rocksdb.apk
