@@ -20,6 +20,9 @@ RUN set -eux && \
   #下载并校验Golang模块
   go mod download && go mod verify && \
   #编译Golang应用
+  # https://github.com/linxGnu/grocksdb/issues/24#issuecomment-752988851
+  CGO_CFLAGS="-I/usr/include/rocksdb" \
+  CGO_LDFLAGS="-L/usr/lib -lrocksdb -lstdc++ -lm -lz -lsnappy -llz4 -lzstd" \
   go build -o /home/main
 ################
 
